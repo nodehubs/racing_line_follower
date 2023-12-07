@@ -92,7 +92,7 @@ sudo apt install -y tros-racing-control
 在完成“一键部署”后，启动该Node的命令为
 ```shell
 source /opt/tros/local_setup.bash
-ros2 launch racing_control racing_control.launch.py
+ros2 launch racing_control racing_control.launch.py avoid_angular_ratio:=0.2 avoid_linear_speed:=0.1 follow_angular_ratio:=-1.0 follow_linear_speed:=0.1
 ```
 
 ## 启动底盘
