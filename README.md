@@ -1,117 +1,120 @@
+English| [简体中文](./README_cn.md)
+
 # racing_line_follower
 
-
-视觉巡线Demo基于纯视觉的方法实现赛车在赛道内运动，其中赛道中间有引导线辅助赛车保持在赛道内。
+The Visual Line Tracking Demo implements the movement of the racing car within the track based on a purely visual method, with guiding lines in the middle of the track assisting the car to stay within the track.
 
 ![live](images/live.jpg)
 
-为实现上述功能，需要视觉输入、环境感知、运动控制三大模块，其中：
+To achieve the above function, three main modules are needed: visual input, environment perception, and motion control, including:
 
-视觉输入模块负责获取真实世界(或仿真世界)的图像并传递给下一级环境感知模块；
+The visual input module is responsible for obtaining images of the real world (or simulated world) and passing them to the next-level environment perception module;
 
-环境感知模块负责感知赛车在赛道中的位置，并将相关信息传递给运动控制模块；
+The environment perception module is responsible for perceiving the position of the racing car on the track and passing relevant information to the motion control module;
 
-运动控制模块根据环境感知模块输出的赛车位置信息计算得出合理的运动控制指令并下发给赛车进行对应运动。
+The motion control module calculates reasonable motion control commands based on the racing car's position information output by the environment perception module and sends them to the car for corresponding motion.
 
 ![flow_path](images/flow_path.jpg)
 
-接下来需要对上述三个大的模块进行细化和实现以完成视觉巡线Demo。[NodeHub](https://developer.horizon.cc/nodehub)是地平线为广大机器人开发者提供的“智能机器人应用中心”，该应用中心包含多个类别不同功能的开源Node，能够快速安装和使用，通过串联不同的Node可以完成对上述三大模块的实现。
+Next, it is necessary to refine and implement the above three major modules to complete the Visual Line Tracking Demo. [NodeHub](https://developer.horizon.cc/nodehub) is the "Intelligent Robot Application Center" provided by Horizon for robot developers, containing open-source Nodes with different functions that can be quickly installed and used. By connecting different Nodes, the implementation of the three major modules mentioned above can be completed.
 
-# 实现细节
+# Implementation Details
 
-## 视觉输入
+## Visual Input
 
-[NodeHub](https://developer.horizon.cc/nodehub)中“外设适配”栏目包含多种传感器和机器人底盘的适配，可以轻松获取图像、点云数据。这里选择[《MIPI相机驱动》](https://developer.horizon.cc/nodehubdetail/168958376283445781)来获取实现视觉输入模块。选择该模块的主要原因是该模块支持GC4663大FOV相机，视角更大，有利于赛车完成巡线。
+The "Peripheral Adaptation" section in [NodeHub](https://developer.horizon.cc/nodehub) includes various sensor and robot chassis adaptations, allowing easy acquisition of image and point cloud data. Here, select "[MIPI Camera Driver](https://developer.horizon.cc/nodehubdetail/168958376283445781)" to implement the visual input module. The main reason for selecting this module is that it supports the GC4663 wide-angle camera, which has a larger field of view, beneficial for the racing car in line tracking.
 
-查看《MIPI相机驱动》Node可知：
+By checking the "MIPI Camera Driver" Node:
 
-该Node支持1920x1080、640x480等多种常见分辨率；
+- This Node supports various common resolutions such as 1920x1080, 640x480;
+- Topics published are /hbmem_image, /image_raw, /camera_info;
+- Different resolutions can be selected through different launch files using ros2 launch.
 
-发布话题为/hbmem_image、/image_raw、/camera_info；
+Taking into account the accuracy and system load of the next-level perception module, the mipi_cam_640x480_nv12_hbmem.launch.py configuration file is chosen here, which publishes images with a resolution of 640x480 in NV12 format through shared memory.
 
-可以通过ros2 launch加载不同launch文件的方式选择分辨率。
-
-综合考虑下一级感知模块的精度和系统负载，这里选择mipi_cam_640x480_nv12_hbmem.launch.py配置文件，即以共享内存的方式发布640x480分辨率的NV12格式图像。
-
-点击Node页面“一键部署”按钮，将生成的如下命令拷贝至RDK X3终端运行
+Click on the "One-Click Deployment" button on the Node page to copy the generated command below to the RDK X3 terminal to run:
 
 ```shell
 sudo apt update
 sudo apt install -y tros-mipi-cam
 ```
-在完成“一键部署”后，启动该Node的命令为
+
+After completing the "One-Click Deployment," the command to start this Node is:
+
 ```shell
 source /opt/tros/setup.bash
 ros2 launch mipi_cam mipi_cam_640x480_nv12_hbmem.launch.py
 ```
 
-## 环境感知
+## Environmental Perception
 
-赛道检测，检测赛道中引导线相对赛车本体的位置关系
+Track detection, detecting the position relationship of guide lines in the track relative to the race car's body.In the "Competition Zone" section of [NodeHub](https://developer.horizon.cc/nodehub), [the “Track Detection” Node](https://developer.horizon.cc/nodehubdetail/184587678518566919) identifies the midpoint of the track in the image using a deep learning method and publishes it in the form of a topic.
 
-[NodeHub](https://developer.horizon.cc/nodehub)中“比赛专区”栏目中[《赛道检测》](https://developer.horizon.cc/nodehubdetail/184587678518566919)基于深度学习的方法识别图像中赛道的中点并以话题的形式发布。
+By checking the "Track Detection" Node:
 
-查看《赛道检测》Node可知：
+- The Node subscribes to the /hbmem_image topic, with the type hbm_img_msgs/msg/HbmMsg1080P. This topic is consistent with the topic published by the visual input module and allows access to the image data from the visual input module.
 
-该Node订阅/hbmem_image话题，类型为hbm_img_msgs/msg/HbmMsg1080P，此话题与视觉输入模块发布的话题一致，可以获取视觉输入模块的图像数据；
+- The Node publishes the calculated processed track midpoint value to the /racing_track_center_detection topic, with the type geometry_msgs/msg/PointStamped.
 
-该Node将计算处理后的赛道中点值以/racing_track_center_detection话题发布，类型为geometry_msgs/msg/PointStamped；
+- The default path for the model file is /opt/nodehub_model/race_detection/race_track_detection.bin, and the updated module can replace this file.
 
-模型文件默认路径/opt/nodehub_model/race_detection/race_track_detection.bin，更新模块可以替换该文件；
-
-点击Node页面“一键部署”按钮，将生成的如下命令拷贝至RDK X3终端运行
+Click the "One-click Deployment" button on the Node page to copy the generated command below to run on the RDK X3 terminal:
 
 ```shell
 sudo apt update
 sudo apt install -y tros-racing-track-detection-resnet
 ```
 
-在完成“一键部署”后，启动该Node的命令为
+After completing the "One-click Deployment", the command to start the Node is:
 
 ```shell
 source /opt/tros/setup.bash
 ros2 launch racing_track_detection_resnet racing_track_detection_resnet.launch.py
 ```
-模型训练方式可参考[《赛道检测模型训练部署全过程讲解》](https://developer.horizon.cc/forumDetail/185446272545810434)
 
-## 运动控制
+For model training methods, please refer to [the "Track Detection Model Training and Deployment Complete Explanation"](https://developer.horizon.cc/forumDetail/185446272545810434).
 
-[NodeHub](https://developer.horizon.cc/nodehub)中“比赛专区”栏目中[《小车巡线控制》](https://developer.horizon.cc/nodehubdetail/184587678518566923)接收赛道识别节点的消息，控制小车巡线。
+## Motion Control
 
-查看《小车巡线控制》Node可知：
+In the "Competition Zone" section of [NodeHub](https://developer.horizon.cc/nodehub), [the “Car Line Following Control” Node](https://developer.horizon.cc/nodehubdetail/184587678518566923) receives messages from the track recognition node to control the car's line following.
 
-该Node订阅/racing_track_center_detection话题，类型为geometry_msgs/msg/PointStamped，此话题与《赛道检测》Node发布的话题一致，用于获取赛道信息进行巡线控制；
+By checking the "Car Line Following Control" Node:
 
-该Node综合感知信息将计算处理后将控制信息以/cmd_vel话题发布，类型为geometry_msgs/msg/Twist；
+- The Node subscribes to the /racing_track_center_detection topic, with the type geometry_msgs/msg/PointStamped. This topic is consistent with the one published by the "Track Detection" Node and is used to obtain track information for line following control.
 
-点击Node页面“一键部署”按钮，将生成的如下命令拷贝至RDK X3终端运行
+- The Node processes perception information and publishes control information to the /cmd_vel topic, with the type geometry_msgs/msg/Twist.
+
+Click the "One-click Deployment" button on the Node page to copy the generated command below to run on the RDK X3 terminal:
+
 ```shell
 sudo apt update
 sudo apt install -y tros-racing-control
 ```
-在完成“一键部署”后，启动该Node的命令为
+
+After completing the "One-click Deployment", the command to start the Node is:
+
 ```shell
 source /opt/tros/local_setup.bash
 ros2 launch racing_control racing_control.launch.py avoid_angular_ratio:=0.2 avoid_linear_speed:=0.1 follow_angular_ratio:=-1.0 follow_linear_speed:=0.1
 ```
 
-## 启动底盘
-[NodeHub](https://developer.horizon.cc/nodehub)中“外设适配”栏目包含多种机器人底盘，需要按照机器人型号选择，此处以[《Originbot底盘驱动》](https://developer.horizon.cc/nodehubdetail/170117036053371431)为例，该节点接收控制节点的消息，分解为对各个电机的控制，实现小车运动
+## Start the Chassis
 
-查看《Originbot底盘驱动》Node可知：
+The "Peripheral Adaptation" section of [NodeHub](https://developer.horizon.cc/nodehub) includes various robot chassis options, to be selected based on the robot model. Here, taking [the "Originbot Chassis Driver"](https://developer.horizon.cc/nodehubdetail/170117036053371431) as an example, this node receives messages from the control node, decomposes them into controls for each motor, and achieves the movement of the car.Viewing the "Originbot Chassis Drive" Node:
 
-该Node订阅/cmd_vdel话题，类型为geometry_msgs/msg/Twist，此话题与《小车巡线控制》Node发布的话题一致，用于获取控制信息进行电机控制；
+This Node subscribes to the /cmd_vel topic with the type geometry_msgs/msg/Twist. This topic is consistent with the topic published by the "Car Line Following Control" Node, used to obtain control information for motor control.
 
-点击Node页面“一键部署”按钮，将生成的如下命令拷贝至RDK X3终端运行
+Click the "One-click Deployment" button on the Node page, and copy the generated command below to run in the RDK X3 terminal:
 ```shell
 sudo apt update
 sudo apt install -y tros-originbot-base tros-serial tros-originbot-msgs
 ```
-在完成“一键部署”后，启动该Node的命令为
+
+After completing the "One-click Deployment," the command to start the Node is:
 ```shell
 source /opt/tros/setup.bash
-ros2 launch originbot_base robot.launch.py 
+ros2 launch originbot_base robot.launch.py
 ```
 
-至此，视觉循线Demo已经搭建完成整体详细框图如下图所示。
+At this point, the visual line following demo has been set up as shown in the overall detailed diagram below.
 ![framework](images/framework.jpg)
