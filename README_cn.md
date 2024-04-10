@@ -117,5 +117,3 @@ ros2 launch originbot_base robot.launch.py
 
 至此，视觉循线Demo已经搭建完成整体详细框图如下图所示。
 ![framework](images/framework.jpg)
-�成整体详细框图如下图所示。
-![framework](images/framework.jpg)
