@@ -37,13 +37,31 @@
 
 点击Node页面“一键部署”按钮，将生成的如下命令拷贝至RDK X3终端运行
 
-```shell
+tros foxy 版本
+```bash
 sudo apt update
 sudo apt install -y tros-mipi-cam
 ```
+tros humbel 版本
+```bash
+sudo apt update
+sudo apt install -y tros-humble-mipi-cam
+```
+
 在完成“一键部署”后，启动该Node的命令为
-```shell
+
+tros foxy 版本
+```bash
+# 配置 tros.b 环境：
 source /opt/tros/setup.bash
+# launch 方式启动
+ros2 launch mipi_cam mipi_cam_640x480_nv12_hbmem.launch.py
+```
+tros humble 版本
+```bash
+# 配置 tros.b humble 环境：
+source /opt/tros/humble/setup.bash
+# launch 方式启动
 ros2 launch mipi_cam mipi_cam_640x480_nv12_hbmem.launch.py
 ```
 
@@ -63,17 +81,34 @@ ros2 launch mipi_cam mipi_cam_640x480_nv12_hbmem.launch.py
 
 点击Node页面“一键部署”按钮，将生成的如下命令拷贝至RDK X3终端运行
 
-```shell
+tros foxy 版本
+```bash
 sudo apt update
 sudo apt install -y tros-racing-track-detection-resnet
+```
+tros humbel 版本
+```bash
+sudo apt update
+sudo apt install -y tros-humble-racing-track-detection-resnet
 ```
 
 在完成“一键部署”后，启动该Node的命令为
 
-```shell
+tros foxy 版本
+```bash
+# 配置 tros.b 环境：
 source /opt/tros/setup.bash
+# launch 方式启动
 ros2 launch racing_track_detection_resnet racing_track_detection_resnet.launch.py
 ```
+tros humble 版本
+```bash
+# 配置 tros.b humble 环境：
+source /opt/tros/humble/setup.bash
+# launch 方式启动
+ros2 launch racing_track_detection_resnet mipi_racing_track_detection_resnetcam.launch.py
+```
+
 模型训练方式可参考[《赛道检测模型训练部署全过程讲解》](https://developer.horizon.cc/forumDetail/185446272545810434)
 
 ## 运动控制
@@ -87,15 +122,35 @@ ros2 launch racing_track_detection_resnet racing_track_detection_resnet.launch.p
 该Node综合感知信息将计算处理后将控制信息以/cmd_vel话题发布，类型为geometry_msgs/msg/Twist；
 
 点击Node页面“一键部署”按钮，将生成的如下命令拷贝至RDK X3终端运行
-```shell
+
+tros foxy 版本
+```bash
 sudo apt update
 sudo apt install -y tros-racing-control
 ```
+tros humbel 版本
+```bash
+sudo apt update
+sudo apt install -y tros-humble-racing-control
+```
+
 在完成“一键部署”后，启动该Node的命令为
-```shell
-source /opt/tros/local_setup.bash
+
+tros foxy 版本
+```bash
+# 配置 tros.b 环境：
+source /opt/tros/setup.bash
+# launch 方式启动
 ros2 launch racing_control racing_control.launch.py avoid_angular_ratio:=0.2 avoid_linear_speed:=0.1 follow_angular_ratio:=-1.0 follow_linear_speed:=0.1
 ```
+tros humble 版本
+```bash
+# 配置 tros.b humble 环境：
+source /opt/tros/humble/setup.bash
+# launch 方式启动
+ros2 launch racing_control racing_control.launch.py avoid_angular_ratio:=0.2 avoid_linear_speed:=0.1 follow_angular_ratio:=-1.0 follow_linear_speed:=0.1
+```
+
 
 ## 启动底盘
 [NodeHub](https://developer.horizon.cc/nodehub)中“外设适配”栏目包含多种机器人底盘，需要按照机器人型号选择，此处以[《Originbot底盘驱动》](https://developer.horizon.cc/nodehubdetail/170117036053371431)为例，该节点接收控制节点的消息，分解为对各个电机的控制，实现小车运动
@@ -105,13 +160,32 @@ ros2 launch racing_control racing_control.launch.py avoid_angular_ratio:=0.2 avo
 该Node订阅/cmd_vdel话题，类型为geometry_msgs/msg/Twist，此话题与《小车巡线控制》Node发布的话题一致，用于获取控制信息进行电机控制；
 
 点击Node页面“一键部署”按钮，将生成的如下命令拷贝至RDK X3终端运行
-```shell
+
+tros foxy 版本
+```bash
 sudo apt update
 sudo apt install -y tros-originbot-base tros-serial tros-originbot-msgs
 ```
+tros humbel 版本
+```bash
+sudo apt update
+sudo apt install -y tros-humble-originbot-base tros-humble-serial tros-humble-originbot-msgs
+```
+
 在完成“一键部署”后，启动该Node的命令为
-```shell
+
+tros foxy 版本
+```bash
+# 配置 tros.b 环境：
 source /opt/tros/setup.bash
+# launch 方式启动
+ros2 launch originbot_base robot.launch.py 
+```
+tros humble 版本
+```bash
+# 配置 tros.b humble 环境：
+source /opt/tros/humble/setup.bash
+# launch 方式启动
 ros2 launch originbot_base robot.launch.py 
 ```
 

@@ -34,15 +34,33 @@ Taking into account the accuracy and system load of the next-level perception mo
 
 Click on the "One-Click Deployment" button on the Node page to copy the generated command below to the RDK X3 terminal to run:
 
-```shell
+tros foxy:
+```bash
 sudo apt update
 sudo apt install -y tros-mipi-cam
 ```
 
+tros humble:
+```bash
+sudo apt update
+sudo apt install -y tros-humble-mipi-cam
+```
+
 After completing the "One-Click Deployment," the command to start this Node is:
 
-```shell
+tros foxy:
+```bash
+# Configure the tros.b environment:
 source /opt/tros/setup.bash
+# Launch to start
+ros2 launch mipi_cam mipi_cam_640x480_nv12_hbmem.launch.py
+```
+
+tros humble:
+```bash
+# Configure the tros.b humble environment:
+source /opt/tros/humble/setup.bash
+# Launch to start
 ros2 launch mipi_cam mipi_cam_640x480_nv12_hbmem.launch.py
 ```
 
@@ -60,15 +78,33 @@ By checking the "Track Detection" Node:
 
 Click the "One-click Deployment" button on the Node page to copy the generated command below to run on the RDK X3 terminal:
 
-```shell
+tros foxy:
+```bash
 sudo apt update
 sudo apt install -y tros-racing-track-detection-resnet
 ```
 
+tros humble:
+```bash
+sudo apt update
+sudo apt install -y tros-humble-racing-track-detection-resnet
+```
+
 After completing the "One-click Deployment", the command to start the Node is:
 
-```shell
+tros foxy:
+```bash
+# Configure the tros.b environment:
 source /opt/tros/setup.bash
+# Launch to start
+ros2 launch racing_track_detection_resnet racing_track_detection_resnet.launch.py
+```
+
+tros humble:
+```bash
+# Configure the tros.b humble environment:
+source /opt/tros/humble/setup.bash
+# Launch to start
 ros2 launch racing_track_detection_resnet racing_track_detection_resnet.launch.py
 ```
 
@@ -86,15 +122,33 @@ By checking the "Car Line Following Control" Node:
 
 Click the "One-click Deployment" button on the Node page to copy the generated command below to run on the RDK X3 terminal:
 
-```shell
+tros foxy:
+```bash
 sudo apt update
 sudo apt install -y tros-racing-control
 ```
 
+tros humble:
+```bash
+sudo apt update
+sudo apt install -y tros-humble-racing-control
+```
+
 After completing the "One-click Deployment", the command to start the Node is:
 
-```shell
-source /opt/tros/local_setup.bash
+tros foxy:
+```bash
+# Configure the tros.b environment:
+source /opt/tros/setup.bash
+# Launch to start
+ros2 launch racing_control racing_control.launch.py avoid_angular_ratio:=0.2 avoid_linear_speed:=0.1 follow_angular_ratio:=-1.0 follow_linear_speed:=0.1
+```
+
+tros humble:
+```bash
+# Configure the tros.b humble environment:
+source /opt/tros/humble/setup.bash
+# Launch to start
 ros2 launch racing_control racing_control.launch.py avoid_angular_ratio:=0.2 avoid_linear_speed:=0.1 follow_angular_ratio:=-1.0 follow_linear_speed:=0.1
 ```
 
@@ -105,14 +159,34 @@ The "Peripheral Adaptation" section of [NodeHub](https://developer.horizon.cc/no
 This Node subscribes to the /cmd_vel topic with the type geometry_msgs/msg/Twist. This topic is consistent with the topic published by the "Car Line Following Control" Node, used to obtain control information for motor control.
 
 Click the "One-click Deployment" button on the Node page, and copy the generated command below to run in the RDK X3 terminal:
-```shell
+
+tros foxy:
+```bash
 sudo apt update
 sudo apt install -y tros-originbot-base tros-serial tros-originbot-msgs
 ```
 
+tros humble:
+```bash
+sudo apt update
+sudo apt install -y tros-humble-originbot-base tros-humble-serial tros-humble-originbot-msgs
+```
+
 After completing the "One-click Deployment," the command to start the Node is:
-```shell
+
+tros foxy:
+```bash
+# Configure the tros.b environment:
 source /opt/tros/setup.bash
+# Launch to start
+ros2 launch originbot_base robot.launch.py
+```
+
+tros humble:
+```bash
+# Configure the tros.b humble environment:
+source /opt/tros/humble/setup.bash
+# Launch to start
 ros2 launch originbot_base robot.launch.py
 ```
 
